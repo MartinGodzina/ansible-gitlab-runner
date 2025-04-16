@@ -144,12 +144,12 @@
     - restart_gitlab_runner
     - restart_gitlab_runner_macos
 
-- name: "Set runner shell option {{ runn_name_prefix }}"
+- name: "Set runner executor section {{ runn_name_prefix }}"
   ansible.builtin.lineinfile:
     dest: "{{ temp_runner_config.path }}"
-    regexp: ^\s*shell =
-    line: '  shell = {{ gitlab_runner.shell | default("") | to_json }}'
-    state: "{{ 'present' if gitlab_runner.shell is defined else 'absent' }}"
+    regexp: ^\s*\[runners\.{{ gitlab_runner.executor | default("shell") }}\]
+    line: '  [runners.{{ gitlab_runner.executor | replace("docker+machine", "machine") | default("shell") }}]'
+    state: "{{ 'absent' if (gitlab_runner.executor | default('shell')) == 'shell' else 'present' }}"
     insertafter: ^\s*executor =
     backrefs: false
   check_mode: false
@@ -158,12 +158,12 @@
     - restart_gitlab_runner
     - restart_gitlab_runner_macos
 
-- name: "Set runner executor section {{ runn_name_prefix }}"
+- name: "Set runner shell option {{ runn_name_prefix }}"
   ansible.builtin.lineinfile:
     dest: "{{ temp_runner_config.path }}"
-    regexp: ^\s*\[runners\.{{ gitlab_runner.executor | default("shell") }}\]
-    line: '  [runners.{{ gitlab_runner.executor | replace("docker+machine", "machine") | default("shell") }}]'
-    state: "{{ 'absent' if (gitlab_runner.executor | default('shell')) == 'shell' else 'present' }}"
+    regexp: ^\s*shell =
+    line: '  shell = {{ gitlab_runner.shell | default("") | to_json }}'
+    state: "{{ 'present' if gitlab_runner.shell is defined else 'absent' }}"
     insertafter: ^\s*executor =
     backrefs: false
   check_mode: false
